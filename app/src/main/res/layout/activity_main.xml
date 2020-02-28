@@ -4,16 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient"
     tools:context=".MainActivity">
 
-    <TextView
+    <ImageView
+        android:id="@+id/Profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome to Home"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <Button
+        android:id="@+id/pickImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:background="#02C00C0C"
+        android:text="Pick Image"
+        android:textColor="#FCFCFC"
+        app:layout_constraintStart_toEndOf="@+id/Profile"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/CaptureImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="#02C00C0C"
+        android:text="Capture Image"
+        android:textColor="#FCFCFC"
+        app:layout_constraintStart_toEndOf="@+id/Profile"
+        app:layout_constraintTop_toBottomOf="@+id/pickImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>
