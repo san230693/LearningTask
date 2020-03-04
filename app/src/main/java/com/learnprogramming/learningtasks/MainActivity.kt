@@ -3,44 +3,49 @@ package com.learnprogramming.learningtasks
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.DatePickerDialog
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     val TAG = "MainActivity"
     //Our variables
     private var mImageView: ImageView? = null
-    private var mUri: Uri? = null
-    //Our widgets
     private lateinit var btnCapture: Button
     private lateinit var btnChoose: Button
-    //Our constants
-    private val OPERATION_CAPTURE_PHOTO = 1000
-    private val OPERATION_CHOOSE_PHOTO = 1001
+
+    private var Image_Uri: Uri? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val loginbtn = findViewById(R.id.login) as Button
-        loginbtn.setOnClickListener{
-            login()
-        }
+//        val loginbtn = findViewById(R.id.login) as Button
+//        loginbtn.setOnClickListener{
+//            login()
+//        }
 
         initializeWidgets()
 
         btnChoose.setOnClickListener{
+            Log.d(TAG, "btnChoose clicked")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                 if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
                     PackageManager.PERMISSION_DENIED){
@@ -59,64 +64,49 @@ class MainActivity : AppCompatActivity() {
                 pickImageFromGallery();
             }
         }
-//        btnCapture.setOnClickListener { capturePhoto() }
-//        btnChoose.setOnClickListener {
-//            //check permission at runtime
-//            val checkSelfPermission = ContextCompat.checkSelfPermission(
-//                this,
-//                android.Manifest.permission.READ_EXTERNAL_STORAGE
-//            )
-//            if (checkSelfPermission != PackageManager.PERMISSION_GRANTED) {
-//                //Requests permissions to be granted to this application at runtime
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1
-//                )
-//            } else {
-//                openGallery()
-//            }
-//        }
-    }
 
-    fun login() {
-            Log.d(TAG, "loginbtn Clicked")
-            hideKeyboard()
-            var textViewUsername = findViewById<TextInputEditText>(R.id.usernameInputBox)
-            var textViewPassword = findViewById<TextInputEditText>(R.id.passwordInputBox)
-            var userName = textViewUsername.text.toString()
-            var password = textViewPassword.text.toString()
-
-            if (userName != "" && password != "") {
-                if (userName == "Testing" && password == "123456789")
-                {
-                    Log.d(TAG, "userName : $userName password $password")
-                    Toast.makeText(
-                        this,
-                        "userName : $userName password $password",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    setContentView(R.layout.activity_main)
+        btnCapture.setOnClickListener{
+            Log.d(TAG, "btnCapture clicked")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED
+                    || checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+                    val permissions = arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    requestPermissions(permissions, CAMERACODE)
                 }
-                else {
-                    Toast.makeText(this, "Username and password mismatch", Toast.LENGTH_SHORT)
-                        .show()
+                else{
+                    openCamera()
                 }
             }
-            else
-            {
-                Toast.makeText(this, "Username and password Cannot be empty", Toast.LENGTH_SHORT)
-                    .show()
+            else{
+                openCamera()
             }
+        }
+        //Calender
+        val c = Calendar.getInstance()
+        val year = c.get(Calendar.YEAR)
+        val month = c.get(Calendar.MONTH)
+        val day = c.get(Calendar.DAY_OF_MONTH)
+
+        //button Click to show dialogue
+        datePickerBtn.setOnClickListener{
+            val dpd = DatePickerDialog(this,DatePickerDialog.OnDateSetListener{view : DatePicker,mYear:Int,mMonth:Int,mDay :Int ->
+                displayDateTxt.setText(""+mDay+"/"+mMonth+"/"+mYear)
+            },year,month,day)
+            dpd.show()
+        }
     }
 
-    fun hideKeyboard() {
-        val inputManager: InputMethodManager =
-            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputManager.hideSoftInputFromWindow(
-            currentFocus!!.windowToken,
-            InputMethodManager.SHOW_FORCED
-        )
+    private fun openCamera() {
+       val  values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE,"New Picture")
+        values.put(MediaStore.Images.Media.DESCRIPTION,"From the camera")
+        Image_Uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values)
+
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,Image_Uri)
+        startActivityForResult(cameraIntent, IMAGE_CAPTURE_CODE)
     }
+
 
     private fun initializeWidgets() {
         btnCapture = findViewById(R.id.CaptureImage)
@@ -125,6 +115,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun pickImageFromGallery() {
+        Log.d(TAG, "PickImage Func")
         //Intent to pick image
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
@@ -136,9 +127,12 @@ class MainActivity : AppCompatActivity() {
         private val IMAGE_PICK_CODE = 1000;
         //Permission code
         private val PERMISSION_CODE = 1001;
+        private val CAMERACODE = 1002;
+        private val IMAGE_CAPTURE_CODE = 1
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.d(TAG, "onRequestPermission func")
         when(requestCode){
             PERMISSION_CODE -> {
                 if (grantResults.size >0 && grantResults[0] ==
@@ -148,103 +142,85 @@ class MainActivity : AppCompatActivity() {
                 }
                 else{
                     //permission from popup denied
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Gallery Permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            CAMERACODE -> {
+                if (grantResults.size > 0 && grantResults[0] ==
+                        PackageManager.PERMISSION_GRANTED){
+                    openCamera()
+                }
+                else
+                {
+                    Toast.makeText(this, "Camera Permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+
         }
     }
 
     //handle result of picked image
     @SuppressLint("MissingSuperCall")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
+        Log.d(TAG, "onActivityResult func")
         if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_PICK_CODE){
             mImageView!!.setImageURI(data?.data)
         }
+
+        if (resultCode == RESULT_OK && requestCode == IMAGE_CAPTURE_CODE) {
+            mImageView!!.setImageURI(Image_Uri)
+        }
     }
 
-//    private fun show(message: String) {
-//        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-//    }
-//
-//    private fun capturePhoto() {
-//        val capturedImage = File(externalCacheDir, "My_Captured_Photo.jpg")
-//        if (capturedImage.exists()) {
-//            capturedImage.delete()
-//        }
-//        capturedImage.createNewFile()
-//        mUri = if (Build.VERSION.SDK_INT >= 24) {
-//            FileProvider.getUriForFile(
-//                this, "info.camposha.kimagepicker.fileprovider",
-//                capturedImage
-//            )
-//        } else {
-//            Uri.fromFile(capturedImage)
-//        }
-//
-//        val intent = Intent("android.media.action.IMAGE_CAPTURE")
-//        intent.putExtra(MediaStore.EXTRA_OUTPUT, mUri)
-//        startActivityForResult(intent, OPERATION_CAPTURE_PHOTO)
-//    }
-//
-//    private fun openGallery() {
-//        val intent = Intent("android.intent.action.GET_CONTENT")
-//        intent.type = "image/*"
-//        startActivityForResult(intent, OPERATION_CHOOSE_PHOTO)
-//    }
-//
-//    private fun renderImage(imagePath: String?) {
-//        if (imagePath != null) {
-//            val bitmap = BitmapFactory.decodeFile(imagePath)
-//            mImageView?.setImageBitmap(bitmap)
-//        } else {
-//            show("ImagePath is null")
-//        }
-//    }
-//
-//    private fun getImagePath(uri: Uri?, selection: String?): String {
-//        var path: String? = null
-//        val cursor = contentResolver.query(uri!!, null, selection, null, null)
-//        if (cursor != null) {
-//            if (cursor.moveToFirst()) {
-//                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA))
+//    private fun dispatchTakePictureIntent() {
+//        Log.d(TAG, "dispatchTakePictureIntent clicked")
+//        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
+//            takePictureIntent.resolveActivity(packageManager)?.also {
+//                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
 //            }
-//            cursor.close()
 //        }
-//        return path!!
-//    }
-//
-//    @TargetApi(19)
-//    private fun handleImageOnKitkat(data: Intent?) {
-//        var imagePath: String? = null
-//        val uri = data!!.data
-//        //DocumentsContract defines the contract between a documents provider and the platform.
-//        if (DocumentsContract.isDocumentUri(this, uri)) {
-//            val docId = DocumentsContract.getDocumentId(uri)
-//            if ("com.android.providers.media.documents" == uri!!.authority) {
-//                val id = docId.split(":")[1]
-//                val selsetion = MediaStore.Images.Media._ID + "=" + id
-//                imagePath = getImagePath(
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                    selsetion
-//                )
-//            } else if ("com.android.providers.downloads.documents" == uri.authority) {
-//                val contentUri = ContentUris.withAppendedId(
-//                    Uri.parse(
-//                        "content://downloads/public_downloads"
-//                    ), java.lang.Long.valueOf(docId)
-//                )
-//                imagePath = getImagePath(contentUri, null)
-//            }
-//        } else if ("content".equals(uri!!.scheme, ignoreCase = true)) {
-//            imagePath = getImagePath(uri, null)
-//        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
-//            imagePath = uri.path
-//        }
-//        renderImage(imagePath)
 //    }
 
 
+    fun login() {
+        Log.d(TAG, "loginbtn Clicked")
+        hideKeyboard()
+        var textViewUsername = findViewById<TextInputEditText>(R.id.usernameInputBox)
+        var textViewPassword = findViewById<TextInputEditText>(R.id.passwordInputBox)
+        var userName = textViewUsername.text.toString()
+        var password = textViewPassword.text.toString()
 
+        if (userName != "" && password != "") {
+            if (userName == "Testing" && password == "123456789")
+            {
+                Log.d(TAG, "userName : $userName password $password")
+                Toast.makeText(
+                    this,
+                    "userName : $userName password $password",
+                    Toast.LENGTH_SHORT
+                ).show()
+                setContentView(R.layout.activity_main)
+            }
+            else {
+                Toast.makeText(this, "Username and password mismatch", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+        else
+        {
+            Toast.makeText(this, "Username and password Cannot be empty", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+    fun hideKeyboard() {
+        val inputManager: InputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputManager.hideSoftInputFromWindow(
+            currentFocus!!.windowToken,
+            InputMethodManager.SHOW_FORCED
+        )
+    }
 
 }

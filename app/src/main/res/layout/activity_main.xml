@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient"
+
     tools:context=".MainActivity">
+    // android:background="@drawable/gradient"
 
     <ImageView
         android:id="@+id/Profile"
@@ -25,7 +26,7 @@
         android:layout_marginTop="32dp"
         android:background="#02C00C0C"
         android:text="Pick Image"
-        android:textColor="#FCFCFC"
+        android:textColor="#3F51B5"
         app:layout_constraintStart_toEndOf="@+id/Profile"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,7 +38,29 @@
         android:layout_marginTop="16dp"
         android:background="#02C00C0C"
         android:text="Capture Image"
-        android:textColor="#FCFCFC"
+        android:textColor="#3F51B5"
         app:layout_constraintStart_toEndOf="@+id/Profile"
         app:layout_constraintTop_toBottomOf="@+id/pickImage" />
+
+    <TextView
+        android:id="@+id/displayDateTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Date"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Profile" />
+
+    <Button
+        android:id="@+id/datePickerBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="32dp"
+        android:background="#03FFFFFF"
+        android:text="Date Picker"
+        android:textColor="#3F51B5"
+        app:layout_constraintStart_toEndOf="@+id/displayDateTxt"
+        app:layout_constraintTop_toBottomOf="@+id/CaptureImage" />
 </androidx.constraintlayout.widget.ConstraintLayout>
