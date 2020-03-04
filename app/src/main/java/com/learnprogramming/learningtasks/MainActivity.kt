@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
 
-        //button Click to show dialogue
+        //button Click to show dialogues
         datePickerBtn.setOnClickListener{
             val dpd = DatePickerDialog(this,DatePickerDialog.OnDateSetListener{view : DatePicker,mYear:Int,mMonth:Int,mDay :Int ->
                 displayDateTxt.setText(""+mDay+"/"+mMonth+"/"+mYear)
